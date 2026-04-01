@@ -17,18 +17,18 @@ jobs:
         run: |
           set -euo pipefail
 
-          echo "Sending POST request to $SUPABASE_URL/functions/v1/keepalive..."
+          echo "Sending POST request to $SUPABASE_URL/functions/v1/keepalive2..."
 
           HTTP_CODE=$(curl -sS -o /tmp/keepalive-body.txt -w "%{http_code}" \
-            -X POST "$SUPABASE_URL/functions/v1/keepalive" \
+            -X POST "$SUPABASE_URL/functions/v1/keepalive2" \
             -H "Authorization: Bearer $SUPABASE_KEY" \
             -H "Content-Type: application/json" \
-            --data '{"name":"keepalive-ping"}')
+            --data '{"name":"keepalive2-ping"}')
 
           echo "HTTP code: $HTTP_CODE"
           if [ "$HTTP_CODE" -ne 200 ]; then
             echo "Response body:"
-            cat /tmp/keepalive-body.txt
+            cat /tmp/keepalive2-body.txt
             echo "⚠️ Supabase ping failed!"
             exit 1
           fi

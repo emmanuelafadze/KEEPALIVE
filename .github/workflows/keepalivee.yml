@@ -2,28 +2,27 @@ name: Supabase Keepalive with Headers
 
 on:
   schedule:
-    # every 5 minutes
-    - cron: "*/5 * * * *"
-  workflow_dispatch: # manual trigger
+    - cron: "*/5 * * * *"  # every 5 minutes
+  workflow_dispatch:
 
 jobs:
   ping-supabase:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Keep Supabase Alive
+      - name: Ping Supabase Function
         env:
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}  # store anon key here
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           SUPABASE_URL: https://rzuvxoqxqcikcnysohmm.supabase.co
         run: |
-          echo "Sending POST request to Supabase keepalive..."
+          echo "Sending POST request with headers..."
           RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -L \
             -X POST "$SUPABASE_URL/functions/v1/keepalive" \
-            -H "Authorization: Bearer $SUPABASE_KEY" \
-            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
+            -H "apikey: $SUPABASE_SERVICE_KEY" \
             -H "Content-Type: application/json" \
             --data '{"name":"Functions"}')
-          
+
           echo "Response code: $RESPONSE"
 
           if [ "$RESPONSE" -ne 200 ]; then

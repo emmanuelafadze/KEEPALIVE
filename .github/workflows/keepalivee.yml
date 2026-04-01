@@ -11,22 +11,31 @@ jobs:
     steps:
       - name: Ping Supabase Function (JWT)
         env:
-          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           SUPABASE_URL: https://rzuvxoqxqcikcnysohmm.supabase.co
+          # MUST be the LEGACY API key: "service_role" (JWT-based), NOT sb_secret_...
+          SUPABASE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_JWT }}
         run: |
           set -euo pipefail
 
-          echo "Sending POST request to keepalive..."
-          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -L \
+          echo "Sending POST request to $SUPABASE_URL/functions/v1/keepalive..."
+
+          # Print response body if not 200 (helps debug auth issues)
+          RESPONSE_BODY=$(curl -s -S -w "%{http_code}" \
             -X POST "$SUPABASE_URL/functions/v1/keepalive" \
             -H "Authorization: Bearer $SUPABASE_KEY" \
             -H "apikey: $SUPABASE_KEY" \
             -H "Content-Type: application/json" \
-            --data '{"name":"keepalive-ping"}')
+            --data '{"name":"keepalive-ping"}' \
+          )
+          
+          # Because -w appends status code to the body, split them:
+          HTTP_CODE="${RESPONSE_BODY: -3}"
+          BODY="${RESPONSE_BODY::-3}"
 
-          echo "Response code: $RESPONSE"
-
-          if [ "$RESPONSE" -ne 200 ]; then
+          echo "HTTP code: $HTTP_CODE"
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "Response body:"
+            echo "$BODY"
             echo "⚠️ Supabase ping failed!"
             exit 1
           fi
